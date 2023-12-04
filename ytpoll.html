@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>YT Stream Poll</title>
+  <link href="style.css" rel="stylesheet" type="text/css"/>
+</head>
+
+<body>
+  <h1>Youtube Stream Poll Bot</h1>
+  <div class="static-box" style="text-align: left">
+    <div style="display: flex">
+      <div style="width: 100%">
+        <a id="stream-url"><strong id="stream-title" style="font-size: 25px"></strong><br></a>
+        <div id="stream-description" style="font-size: 20px"></div>
+      </div>
+      <img id="stream-img" alt="Stream Thumbnail" style="width: 15%; height: 15%">
+    </div>
+    <div id="stream-chat" width="100%" height="100%"></div>
+  </div>
+  <div style="font-size: 35px; text-align: center"> Don't see the right stream? <a href="https://accounts.google.com/o/oauth2/auth?client_id=405971353805-6rt754t65pvjgkr8rodigvqinu3js6d4.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fytpoll.cornbread2100.com&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.readonly">Click here to try again.</a></div>
+  <script>
+    var stream = (new URLSearchParams(location.search)).get('stream');
+    if (stream == null) location = 'https://accounts.google.com/o/oauth2/auth?client_id=405971353805-6rt754t65pvjgkr8rodigvqinu3js6d4.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fytpoll.cornbread2100.com&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fyoutube.readonly';
+    else if (stream == 'none') {
+      console.log('no live stream');
+    } else {
+      stream = JSON.parse(decodeURIComponent(stream));
+      console.log(stream);
+      document.getElementById('stream-url').href = `https://youtube.com/watch?v=${stream.id}`;
+      document.getElementById('stream-title').innerText = stream.title;
+      document.getElementById('stream-description').innerText = stream.description;
+      document.getElementById('stream-img').src = stream.thumbnail;
+
+      var lastMessage;
+      async function updateChat() {
+        const chat = await (await fetch(`https://www.googleapis.com/youtube/v3/liveChat/messages?liveChatId=Cg0KC1BKVjkzNVVaamZ3KicKGFVDUy1JRC1uME95Z2lOQ0RzSFRDUnpydxILUEpWOTM1VVpqZnc&part=snippet`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${(new URLSearchParams(location.search)).get('token')}`
+          }
+        })).json();
+        console.log(chat)
+        if (lastMessage == null) {
+          for (const message of chat.items) {
+            // const newMessage = document.createElement('div');
+            // newMessage.innerHTML = message.snippet.displayMessage;
+            document.getElementById('stream-chat').innerText += `${message.snippet.displayMessage}\n`;
+          }
+        }
+      }
+      updateChat();
+    }
+  </script>
+
+  <div id="sidebar"></div>
+  <script src="sidebar.js"></script>
+</body>
+
+</html>
